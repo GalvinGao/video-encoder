@@ -1,0 +1,49 @@
+name: Build and Release
+
+on: push
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to create releases and tags
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.4 # From package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Using Node.js 20.x
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm run build # This command is "tsc -b && vite build && 7z a video-encoder.7z dist"
+
+      - name: Generate build identifiers
+        id: identifiers
+        run: |
+          echo "TIMESTAMP=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+          echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+          echo "TAG_NAME=build-$(date +'%Y%m%d%H%M%S')-$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
+
+      - name: Create Release and Upload Artifact
+        uses: softprops/action-gh-release@v2
+        with:
+          files: video-encoder.7z
+          tag_name: ${{ env.TAG_NAME }}
+          name: Build ${{ env.TAG_NAME }}
+          body: |
+            Automated build from push ${{ github.sha }} to branch ${{ github.ref_name }}.
+            Commit message: ${{ github.event.head_commit.message }}
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
