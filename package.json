@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && 7z a video-encoder.7z dist",
+    "build": "tsc -b && vite build",
+    "archive": "7z a video-encoder.7z dist",
     "lint": "eslint .",
     "preview": "vite preview"
   },
