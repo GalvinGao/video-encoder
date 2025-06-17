@@ -24,7 +24,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build project
-        run: pnpm run build # This command is "tsc -b && vite build && 7z a video-encoder.7z dist"
+        run: pnpm run build && pnpm run archive
 
       - name: Generate build identifiers
         id: identifiers
